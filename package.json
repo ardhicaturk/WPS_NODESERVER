@@ -1,0 +1,32 @@
+{
+  "name": "server",
+  "version": "0.0.1",
+  "description": "Server for WPS_POWERMONITOR",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ardhicaturk/WSP_Server.git"
+  },
+  "keywords": [
+    "WPS"
+  ],
+  "author": "Ardhi Catur K",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ardhicaturk/WSP_Server/issues"
+  },
+  "homepage": "https://github.com/ardhicaturk/WSP_Server#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0",
+    "socket.io-redis": "^5.2.0"
+  }
+}
