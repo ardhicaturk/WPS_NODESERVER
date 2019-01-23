@@ -2,7 +2,7 @@ const app = require('express')();
 var port = process.env.PORT || 8080;
 var portIO = process.env.PORT || 8081;
 const http = require('http').Server(app);
-const io = require('socket.io')(portIO);
+const io = require('socket.io')(portIO+1);
 const redis = require('socket.io-redis');
 
 //===================================== HTTP Event Handler ========================================//
