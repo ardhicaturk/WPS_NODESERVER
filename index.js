@@ -87,6 +87,9 @@ io.on('connection', function (socket) {
         saveInput("RSSI", a[0], a[1]);
         //console.log(data);
     });
+    socket.on('chat message', function(msg){
+        console.log('message: ' + msg);
+      });
 });
 
 http.listen(port, function () {
