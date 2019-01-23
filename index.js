@@ -16,6 +16,9 @@ app.get('/', function (req, res, next) {
 app.get('/js/socket.io.js', function (req, res, next) {
     res.status(200).sendFile(__dirname + '/webpage/js/socket.io.js');;
 });
+app.get('/js/jquery-3.1.1.js', function (req, res, next) {
+    res.status(200).sendFile(__dirname + '/webpage/js/jquery-3.1.1.js');;
+});
 //====================================== Socket IO Event Handler ====================================//
 var nodeList = new Object();
 nodeList.ID = new Array();
