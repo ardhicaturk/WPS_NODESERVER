@@ -1,6 +1,8 @@
 const app = require('express')();
+var port = process.env.PORT || 8080;
+var portIO = process.env.PORT || 8081;
 const http = require('http').Server(app);
-const io = require('socket.io')(8081);
+const io = require('socket.io')(portIO);
 const redis = require('socket.io-redis');
 
 //===================================== HTTP Event Handler ========================================//
@@ -88,7 +90,6 @@ io.on('connection', function (socket) {
     });
 });
 
-var port = process.env.PORT || 8080;
 http.listen(port, function () {
     console.log('listening on *:' + port);
 });
