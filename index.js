@@ -120,7 +120,7 @@ io.on('connection', function (socket) {
             clientList.ID.push(a[1]);
             clientList.user.push(a[0]);
         }
-        io.sockets.connected[a[1]].emit("node", {num: 4, name: ["node1", "node2", "node3", "node4"]});
+        io.sockets.connected[a[1]].emit("node", {num: 5, name: ["node1", "node2", "node3", "node4", "node5"]});
     });
 
 });

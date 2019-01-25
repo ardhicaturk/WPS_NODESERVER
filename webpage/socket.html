@@ -11,6 +11,8 @@
       var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
       return results[1] || 0;
     }
+    var lastNum = 0;
+    var bC = false;
     $(function () {
       var socket = io();
       var username = $.urlParam('username');
@@ -26,13 +28,15 @@
       });
       socket.on('node', function (data) {
         var num = data.num;
-        for (var i = 0; i < num; i++) {
-          var odd = i % 2;
-          var add = odd == 0 ? "" : "col-sm-offset-2";
-          $("#clientList").append('<div id="client' + i +
-            '" class="jumbotron col-sm-5 '+add+'">\
+        if (lastNum < num) {
+          for (var i = lastNum; i < num; i++) {
+            var odd = i % 2;
+            var add = odd == 0 ? "" : "col-sm-offset-2";
+            $("#clientList").append('<div id="client' + i +
+              '" class="jumbotron col-sm-5 ' + add +
+              '">\
             <h3 class="text-center text-uppercase">' + data.name[i] +
-            '</h3>\
+              '</h3>\
             <div class="form-group keterangan">\
                     <div class="col-sm-4">\
                         <p>Status:</p>\
@@ -52,15 +56,18 @@
                     </div>\
                 </div>\
             </div>'
-          )
+            )
+          }
+          lastNum = num;
         }
       });
     });
   </script>
   <style>
-    .container{
+    .container {
       width: 90%;
     }
+
     h3 {
       margin-top: 0;
     }
@@ -71,10 +78,12 @@
       -moz-box-shadow: -4px 7px 57px -1px rgba(0, 0, 0, 0.51);
       box-shadow: -4px 7px 57px -1px rgba(0, 0, 0, 0.51);
     }
-    .keterangan{
+
+    .keterangan {
       border-top: 1px #aaa solid;
     }
-    .keterangan p{
+
+    .keterangan p {
       font-size: 12px;
       margin: 10px;
     }

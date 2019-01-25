@@ -9,6 +9,13 @@
         .container{
             width: 90vw;
         }
+        footer {
+            width: 90vw;
+            text-align: center;
+            position: fixed;
+            top: 96vh;
+            font-size: 2vh;
+        }
     </style>
 </head>
 
@@ -24,6 +31,9 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li><a href="/dashboard">Home</a></li>
+                    <li><a href="/">Daftar Node</a></li>
+                    <li><a href="/">Setting</a></li>
+                    
                 </ul>
 
                 <ul class="nav navbar-nav navbar-right">
@@ -37,6 +47,7 @@
         <div id="socket"></div>
     </div>
 </body>
+<footer>&copy 2019 SPAES Reasearch Team</footer>
 <script>
     $(document).ready(function(){
         var usr = getCookie("username");
