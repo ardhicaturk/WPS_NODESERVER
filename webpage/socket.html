@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <script src="js/socket.io.js"></script>
+  <script src="js/jquery-3.1.1.js"></script>
+  <script>
+    $.urlParam = function (name) {
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      return results[1] || 0;
+    }
+    $(function () {
+      var socket = io();
+      var username = $.urlParam('username');
+
+      socket.on('connect', function () {
+        $('#messages').append('<li>Connected');
+      });
+      socket.on('disconnect', function () {
+        $('#messages').append('<li>Disconnected');
+      });
+      socket.on('ID', function (msg) {
+        socket.emit('webClient', username + "," + msg);
+      });
+      socket.on('node', function (data) {
+        var num = data.num;
+        for (var i = 0; i < num; i++) {
+          var odd = i % 2;
+          var add = odd == 0 ? "" : "col-sm-offset-2";
+          $("#clientList").append('<div id="client' + i +
+            '" class="jumbotron col-sm-5 '+add+'">\
+            <h3 class="text-center text-uppercase">' + data.name[i] +
+            '</h3>\
+            <div class="form-group keterangan">\
+                    <div class="col-sm-4">\
+                        <p>Status:</p>\
+                        <p>RSSI:</p>\
+                        <p>Tegangan:</p>\
+                        <p>Arus:</p>\
+                        <p>Sakelar:</p>\
+                        <p>Kondisi:</p>\
+                    </div>\
+                    <div class="col-sm-8">\
+                        <p id="status"></p>\
+                        <p id="rssi"></p>\
+                        <p id="tegangan"></p>\
+                        <p id="arus"></p>\
+                        <p id="sakelar"></p>\
+                        <p id="kondisi"></p>\
+                    </div>\
+                </div>\
+            </div>'
+          )
+        }
+      });
+    });
+  </script>
+  <style>
+    .container{
+      width: 90%;
+    }
+    h3 {
+      margin-top: 0;
+    }
+
+    .jumbotron {
+      padding: 20px;
+      -webkit-box-shadow: -4px 7px 57px -1px rgba(0, 0, 0, 0.51);
+      -moz-box-shadow: -4px 7px 57px -1px rgba(0, 0, 0, 0.51);
+      box-shadow: -4px 7px 57px -1px rgba(0, 0, 0, 0.51);
+    }
+    .keterangan{
+      border-top: 1px #aaa solid;
+    }
+    .keterangan p{
+      font-size: 12px;
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body class="container" style="padding-top: 10px;">
+  <div class="row" id="clientList">
+
+  </div>
+
+</body>
+
+</html>
