@@ -1,5 +1,5 @@
 const app = require('express')();
-var port = process.env.PORT || 8088;
+var port = 8089;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const redis = require('socket.io-redis');
