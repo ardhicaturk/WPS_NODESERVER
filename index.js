@@ -1,4 +1,5 @@
 const app = require('express')();
+var ip = process.env.IP;
 var port = process.env.PORT || 8089;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -71,7 +72,7 @@ function saveInput(dataType, names, dta) {
         switch (dataType) {
             case "RSSI":
                 nodeList.RSSI[buf] = dta;
-                //console.log("RSSI " + nodeList.name[buf] + ": " + translateRSSI(nodeList.RSSI[buf]));
+                console.log("RSSI " + nodeList.name[buf] + ": " + translateRSSI(nodeList.RSSI[buf]));
                 break;
             case "param1":
                 break;
@@ -126,5 +127,5 @@ io.on('connection', function (socket) {
 });
 
 http.listen(port, function () {
-    console.log('listening on *:' + port);
+    console.log('listening on '+ip+':' + port);
 });
