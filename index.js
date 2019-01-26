@@ -31,12 +31,14 @@ var nodeList = new Object();
 nodeList.ID = new Array();
 nodeList.name = new Array();
 nodeList.RSSI = new Array();
+nodeList.SID = new Array();
+
 var clientList = new Object();
 clientList.user = new Array();
 clientList.ID = new Array();
 var inChange = false;
-async function checkMember(ids, names) {
-    var a = nodeList.name.indexOf(names);
+async function checkMember(ids, SID, names) {
+    var a = nodeList.name.indexOf(SID);
     if (a > -1) {
         inChange = true;
         if (nodeList.ID[a] != 0) {
@@ -46,6 +48,7 @@ async function checkMember(ids, names) {
         console.log(names + " is connected");
     } else {
         console.log(names + " is connected");
+        nodeList.SID.push(SID);
         nodeList.name.push(names);
         nodeList.ID.push(ids);
         nodeList.RSSI.push(0);
@@ -65,8 +68,8 @@ function translateRSSI(num) {
     }
 }
 
-function saveInput(dataType, names, dta) {
-    var buf = nodeList.name.indexOf(names);
+function saveInput(dataType, SID, dta) {
+    var buf = nodeList.name.indexOf(SID);
     if (buf > -1) {
         switch (dataType) {
             case "RSSI":
@@ -101,11 +104,11 @@ io.on('connection', function (socket) {
     });
     //========================================== NODE HANDLER ======================================//
     socket.on('nameNode', function (data) {
-        var a = data.split(","); // 0: name, 1: ID
-        checkMember(a[1], a[0]);
+        var a = data.split(","); // 0: name, 1: ID, 2: SID
+        checkMember(a[1], a[2], a[0]);
     });
     socket.on('RSSI', function (data) {
-        var a = data.split(","); // 0: name, 1: RSSI
+        var a = data.split(","); // 0: SID, 1: RSSI
         saveInput("RSSI", a[0], a[1]);
         //console.log(data);
     });
