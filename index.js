@@ -2,10 +2,8 @@ const app = require('express')();
 var port = process.env.PORT || 8089;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-var Sequelize = require('sequelize');
-var pg = require('pg');
 var sslRedirect = require('heroku-ssl-redirect');
-pg.defaults.ssl = true;
+
 //const redis = require('socket.io-redis');
 var loginPage = require('./login');
 var User = require('./login').modelUser();
