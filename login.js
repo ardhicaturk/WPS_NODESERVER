@@ -152,7 +152,7 @@ module.exports = {
                         })
                         .then(user => {
                             //newUser(username);
-                            res.sendFile(__dirname + '/webpage/login.html?auth=1');
+                            res.redirect('/login?auth=1');
                         })
                         .catch(error => {
                             console.log(error);
