@@ -3,14 +3,11 @@ var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var Sequelize = require('sequelize');
-var pg = require('pg');
-pg.defaults.ssl = true;
 // var sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/auth-system', {
 //     logging: false
 // });
 var sequelize = new Sequelize(process.env.DATABASE_URL, {
     logging: false,
-    ssl:true,
     dialect: 'postgres',
     dialectOptions: {
         ssl: true
