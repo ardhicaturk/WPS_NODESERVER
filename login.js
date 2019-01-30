@@ -7,7 +7,11 @@ var Sequelize = require('sequelize');
 //     logging: false
 // });
 var sequelize = new Sequelize(proceess.env.DATABASE_URL, {
-    logging: false
+    logging: false,
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: true    
+    }
 });
 var md5 = require('md5');
 
