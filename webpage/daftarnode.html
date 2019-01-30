@@ -1,0 +1,159 @@
+<html>
+
+<head>
+    <title>Daftar Node</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="js/jquery-3.1.1.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <style>
+        .container {
+            width: 90vw;
+        }
+
+        footer {
+            width: 90vw;
+            text-align: center;
+            position: fixed;
+            top: 96vh;
+            font-size: 2vh;
+        }
+    </style>
+</head>
+
+<body class="container">
+    <div class="page-header">
+        <h1>SPAES - Wireless Protection System</h1>
+        <h3 id="greeting"></h3>
+    </div>
+
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="/dashboard">Home</a></li>
+                    <li><a href="/daftarnode">Daftar Node</a></li>
+                    <li><a href="/">Setting</a></li>
+
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout">Log Out</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="container row" id="isi">
+        <table class="table table-hover" id="tabelisi" name="tabelisi">
+            <tr>
+                <th width=5%>#</th>
+                <th width=25%>Nama Node</th>
+                <th width=20%>SID</th>
+                <th width=50%>Keterangan</th>
+            </tr>
+        </table>
+    </div>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Tambah Perangkat</button>
+</body>
+<footer>&copy 2019 SPAES Reasearch Team</footer>
+<script>
+
+    $.urlParam = function (name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        results = results == null ? 0 : results;
+        return results[1] || 0;
+    }
+    $(document).ready(function () {
+        var socket = io();
+        var usr = getCookie("username");
+        var node = getCookie("node");
+        var err = $.urlParam("error");
+        var lastNum=0;
+        socket.on('responseGetNode', function (data) {
+            for(var i = lastNum; i < data.length; i++){
+                var str = "<tr>\
+                    <td>"+(i+1)+"</td>\
+                    <td>"+data[i].nameNode+"</td>\
+                    <td>"+data[i].SID+"</td>\
+                    <td>"+data[i].keterangan+"</td>\
+                    </tr>";
+                $("#tabelisi").append(str);
+            }
+            lastNum = data.length;
+        });
+        socket.on('ID', function (msg) {
+            socket.emit('webClient', usr + "," + msg);
+            if(err == "1"){
+                alert("Gagal menambahkan perangkat");
+            }
+            $("#greeting").append("Hi " + usr + ",");
+            if (node == "0" ){
+                $("#tabelisi").css("display", "none");
+                $("#isi").append("<p>*Anda belum memiliki perangkat yang terdaftar</p>");
+            } else {
+                socket.emit('getNode', usr);
+            }
+        });
+        
+    });
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+</script>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel" style="text-align:center;">Tambah Perangkat Baru</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" action="/daftarnode" method="post">
+                    <div class="form-group">
+                        <label for="inputSID" class="col-sm-3 control-label">SID:</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="inputSID" placeholder="SID" name="sid"
+                                autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNamanode" class="col-sm-3 control-label">Nama Node:</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="inputNamanode" placeholder="Nama Node" name="namanode">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputKeterangan" class="col-sm-3 control-label">Keterangan:</label>
+                        <div class="col-sm-9">
+                            <textarea type="text" class="form-control" id="inputKeterangan" placeholder="Keterangan"
+                                name="keterangan"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-10 col-sm-2">
+                            <div id="checkAuth"></div>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>
