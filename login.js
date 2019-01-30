@@ -140,6 +140,7 @@ module.exports = {
                 }).then(function (user) {
                     res.redirect('/signup?auth=1');
                 }).catch((error) => {
+                    console.log(error);
                     usr.create({
                             username: req.body.username,
                             email: req.body.email,
