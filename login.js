@@ -6,7 +6,7 @@ var Sequelize = require('sequelize');
 // var sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/auth-system', {
 //     logging: false
 // });
-var sequelize = new Sequelize(proceess.env.DATABASE_URL, {
+var sequelize = new Sequelize(process.env.DATABASE_URL, {
     logging: false,
     dialect: 'postgres',
     dialectOptions: {
