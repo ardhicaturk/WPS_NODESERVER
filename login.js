@@ -47,17 +47,20 @@ var usr = sequelize.define('users', {
 
 function checkNodeInUser(username) {
     var model = newUser(username);
+    var buf = 0;
     model.sync()
         .then(() => {
-            model.findAll().then(user => {
-                console.log("Jumlah node terdaftar " + username + ": " + user.length) + "node";
+            model.findAll().then((user) => {
+                var a = user.length == undefined ? 0 : user.length;
+                console.log("Jumlah node terdaftar " + username + ": " + a);
+                buf = a;
             });
-            return user.length;
         })
-        .catch(error => {
-            console.log(username + " belum memiliki node");
-            return 0;
+        .catch((error) => {
+            console.log(username + " belum memiliki node: " +error);
+            buf = 0;
         });
+    return buf;
 }
 
 function createNewNode(model, SID, nameNode, keterangan) {
@@ -200,12 +203,10 @@ module.exports = {
         //=================================== daftar node event ================================//
         app.route('/daftarnode').get((req, res) => {
             if (req.session.user && req.cookies.user_sid) {
-                if (checkNodeInUser(req.cookies.username) == 0) {
-                    res.sendFile(__dirname + '/webpage/daftarnode.html');
-                    res.cookie("node", 0);
-                } else {
-                    res.sendFile(__dirname + '/webpage/daftarnode.html');
-                }
+                var bCheck = checkNodeInUser(req.cookies.username)
+                console.log(bCheck);
+                res.sendFile(__dirname + '/webpage/daftarnode.html');  
+                res.cookie("node", bCheck);
             } else {
                 res.redirect('/login');
             }

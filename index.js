@@ -41,7 +41,11 @@ nodeList.ID = new Array();
 nodeList.name = new Array();
 nodeList.RSSI = new Array();
 nodeList.SID = new Array();
-
+nodeList.status = new Array();
+nodeList.tegangan = new Array();
+nodeList.arus= new Array();
+nodeList.kondisi= new Array();
+nodeList.sakela= new Array();
 /*
 Additional nodeList:
 -Status
@@ -171,7 +175,9 @@ io.on('connection', function (socket) {
                 //console.log("maman : " + JSON.stringify(users) + " \n" + users[0].SID);
                 var index = clientList.user.indexOf(data);
                 //console.log("ID CLIENT: " + clientList.ID[index]);
-                io.sockets.connected[clientList.ID[index]].emit("responseGetNode", users);
+                if(index > -1){
+                    io.sockets.connected[clientList.ID[index]].emit("responseGetNode", users);
+                }
                 for(var i = 0; i < users.length; i++){
                     var a = {SID: users[i].SID, nameNode: users[i].nameNode};
                     var b = clientList.node.findIndex(x => x.SID == users[i].SID);
@@ -182,7 +188,7 @@ io.on('connection', function (socket) {
                         clientList.node.push(a);
                     }
                 }
-                console.log(JSON.stringify(clientList.node));
+                //console.log(JSON.stringify(clientList.node));
             });
         })
         .catch(error => console.log('This error occured', error));

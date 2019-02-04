@@ -24,12 +24,13 @@
             position: absolute;
             width: 88vw;
             height: 60vh;
-            opacity: 0.7;
+            opacity: 0.8;
             background-color: white;
         }
         .loading {
             position: relative;
             left: calc(50% - 40px);
+            top: calc(50% - 40px);
             border: 16px solid #f3f3f3;
             border-radius: 50%;
             border-top: 16px solid #3498db;
@@ -39,6 +40,9 @@
             animation: spin 2s linear infinite;
         }
 
+        .page-header{
+            border-bottom: 1px solid #aaa;
+        }
 /* Safari */
         @-webkit-keyframes spin {
             0% { -webkit-transform: rotate(0deg); }
@@ -77,12 +81,14 @@
     </nav>
 
     <div class="container row" id="isi">
-        <div class="overlay"><div class="loading"></div></div>
+        <div class="overlay">
+            <div class="loading"></div>
+        </div>
         <table class="table table-hover" id="tabelisi" name="tabelisi">
             <tr>
                 <th width=5%>#</th>
                 <th width=25%>Nama Node</th>
-                <th width=20%>SID</th>
+                <th width=20%>WHID</th>
                 <th width=50%>Keterangan</th>
             </tr>
         </table>
@@ -104,7 +110,8 @@
         var err = $.urlParam("error");
         var lastNum=0;
         socket.on('responseGetNode', function (data) {
-            for(var i = lastNum; i < data.length; i++){
+            if(data.length > lastNum){
+                for(var i = lastNum; i < data.length; i++){
                 var str = "<tr>\
                     <td>"+(i+1)+"</td>\
                     <td>"+data[i].nameNode+"</td>\
@@ -115,13 +122,13 @@
             }
             $(".overlay").css("display", "none");
             lastNum = data.length;
+            }
         });
         socket.on('ID', function (msg) {
             socket.emit('webClient', usr + "," + msg);
             if(err == "1"){
                 alert("Gagal menambahkan perangkat");
             }
-            $("#greeting").append("Hi " + usr + ",");
             if (node == "0" ){
                 $(".overlay").css("display", "none");
                 $("#tabelisi").css("display", "none");
@@ -159,9 +166,9 @@
             <div class="modal-body">
                 <form class="form-horizontal" action="/daftarnode" method="post">
                     <div class="form-group">
-                        <label for="inputSID" class="col-sm-3 control-label">SID:</label>
+                        <label for="inputSID" class="col-sm-3 control-label">HWID:</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="inputSID" placeholder="SID" name="sid"
+                            <input type="text" class="form-control" id="inputSID" placeholder="HWID" name="sid"
                                 autocomplete="off">
                         </div>
                     </div>
