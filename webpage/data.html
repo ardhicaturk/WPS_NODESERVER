@@ -1,0 +1,332 @@
+<html>
+
+<head>
+    <title>Daftar Node</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="js/jquery-3.1.1.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300" type="text/css" />
+    <style>
+        body {
+            width: 100wh;
+            height: 90vh;
+            color: #fff;
+            background: linear-gradient(63deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+            background-size: 400% 400%;
+            -webkit-animation: Gradient 15s ease infinite;
+            -moz-animation: Gradient 15s ease infinite;
+            animation: Gradient 15s ease infinite;
+	        font-family: 'Open Sans';
+        }
+
+        @-webkit-keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        @-moz-keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        @keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        .container {
+            width: 90vw;
+        }
+
+        .overlay {
+            display: none;
+            padding: 20px;
+            position: absolute;
+            width: 88vw;
+            height: 60vh;
+            opacity: 0.8;
+            background-color: white;
+            z-index: 100000;
+        }
+
+        .loading {
+            position: relative;
+            left: calc(50% - 40px);
+            top: calc(50% - 40px);
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 80px;
+            height: 80px;
+            -webkit-animation: spin 2s linear infinite;
+            /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        .page-header {
+            border-bottom: 1px solid rgb(250, 218, 218);
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .listnode {
+            cursor: pointer;
+            transition: box-shadow 0.35s ease;
+        }
+
+        .listnode:hover {
+            box-shadow: -4px 7px 20px -1px rgba(0, 0, 0, 0.51);
+        }
+
+        .panel-heading {
+            transition: background 0.35s ease;
+        }
+
+        .listnode:hover .panel-heading {
+            background: #3498db;
+            color: white;
+        }
+
+        #pageButton {
+            display: none;
+        }
+        iframe{
+            padding-top: 20px;
+            padding-bottom: 20px;
+            border-radius: 5px;
+        }
+        #nextPage{
+            cursor: pointer;
+            transition: background 0.35s ease;
+        }
+        #nextPage:hover{
+            background: rgb(238, 123, 167);
+        }
+        #prevPage{
+            cursor: pointer;
+            transition: background 0.35s ease;
+        }
+        #prevPage:hover{
+            background: rgb(238, 123, 167);
+        }
+    </style>
+</head>
+<body class="container">
+    <div class="page-header">
+        <h1 class="text-center">SPAES - Wireless Protection System</h1>
+        <h3 id="greeting"></h3>
+    </div>
+    <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/dashboard">Home</a></li>
+                        <li><a href="/daftarnode">Daftar Node</a></li>
+                        <li class="active"><a href="/data">Data</a></li>
+    
+                    </ul>
+    
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/logout">Log Out</a></li>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+        </nav>
+    
+    <h3 id="headingtitle">Pilih Node:</h3>
+    <div class="container row" id="isi">
+
+        <div class="overlay">
+            <div class="loading"></div>
+        </div>
+
+    </div>
+    <div class="row" id='pageButton'>
+        <div class="col-sm-3"></div>
+        <div class="col-sm-1" style="border: white 1px solid; border-radius: 5px;" id="prevPage">
+            <h5 class="text-center">Prev</h5>
+        </div>
+        <div class="col-sm-1"></div>
+        <div class="col-sm-2" id="pageIndex" style="text-align: center;border: white 1px solid; border-radius: 5px;"></div>
+        <div class="col-sm-1"></div>
+        <div class="col-sm-1" style="border: white 1px solid; border-radius: 5px;" id='nextPage'>
+            <h5 class="text-center">Next</h5>
+        </div>
+        <div class="col-sm-3"></div>
+    </div>
+</body>
+<script>
+    $.urlParam = function (name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        results = results == null ? 0 : results;
+        return results[1] || 0;
+    }
+    var page = 0;
+    var maxPage;
+    var nodeSelected;
+    $('#nextPage').click(function () {
+        page++;
+        if (page > maxPage) page = maxPage;
+        $('iframe').remove();
+        $('body').append('<iframe src="/datalog?node=' + nodeSelected + '&page=' + page +
+            '" style="height:100%;width:100%;border:0;"></iframe>');
+        $('#pageIndex').html("<h5>Hal: " + (page + 1) + "</h5>");
+        // if (page == 0) {
+        //     $("#prevPage").css("display", "none");
+        //     $("#nextPage").css("display", "block");
+        // } else if (page == maxPage) {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "none");
+        // } else {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "block");
+        // }
+    });
+    $('#prevPage').click(function () {
+        page--;
+        if (page < 0) page = 0;
+        $('iframe').remove();
+        $('body').append('<iframe src="/datalog?node=' + nodeSelected + '&page=' + page +
+            '" style="height:100%;width:100%;border:0;"></iframe>');
+        $('#pageIndex').html("<h5>Hal: " + (page + 1) + "</h5>");
+        // if (page == 0) {
+        //     $("#prevPage").css("display", "none");
+        //     $("#nextPage").css("display", "block");
+        // } else if (page == maxPage) {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "none");
+        // } else {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "block");
+        // }
+    });
+    $(document).ready(function () {
+        var socket = io();
+        var usr = getCookie("username");
+        var node = getCookie("node");
+        var err = $.urlParam("error");
+        var lastNum = 0;
+        // if (page == 0) {
+        //     $("#prevPage").css("display", "none");
+        //     $("#nextPage").css("display", "block");
+        // } else if (page == maxPage) {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "none");
+        // } else {
+        //     $("#prevPage").css("display", "block");
+        //     $("#nextPage").css("display", "block");
+        // }
+        $(".overlay").css("display", "block");
+        socket.on('maxPageResponse', function (data) {
+            maxPage = data - 1;
+        })
+        socket.on('responseGetNode', function (data) {
+            if (data.length > lastNum) {
+                for (var i = lastNum; i < data.length; i++) {
+                    var str = '<div class="listnode panel panel-default" id="list" name="' + i +
+                        '">\
+                        <div class="panel-heading"><h3 class="panel-title">' +
+                        (i + 1) + '. ' + data[i].nameNode +
+                        '</h3></div>\
+                        <div class="panel-body" style="color:black;">' + data[i].keterangan +
+                        '</div></div>';
+                    $("#isi").append(str);
+                }
+                $(".overlay").css("display", "none");
+                lastNum = data.length;
+            }
+            $("#list*").click(function () {
+                var buf = $(this).attr('name');
+                //alert(buf);
+                $("#isi").css('display', 'none');
+                $('#headingtitle').css('display', 'none');
+                nodeSelected = data[buf].nameNode;
+                socket.emit('maxPage', usr+','+nodeSelected);
+                $('body').append('<iframe src="/datalog?node=' + data[buf].nameNode + '&page=' +
+                    page + '" style="height:100%;width:100%;border:0;"></iframe>');
+                $('#pageIndex').html("<h5>Hal: " + (page + 1) + "</h5>");
+                $('#pageButton').css('display', 'block');
+            });
+        });
+        socket.on('ID', function (msg) {
+            socket.emit('webClient', usr + "," + msg);
+            if (err == "1") {
+                alert("Gagal menambahkan perangkat");
+            }
+            if (node == "0") {
+                $(".overlay").css("display", "none");
+                $("#isi").append("<p>*Anda belum memiliki perangkat yang terdaftar</p>");
+            } else {
+                socket.emit('getNode', usr);
+            }
+        });
+
+    });
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+</script>
+
+</html>

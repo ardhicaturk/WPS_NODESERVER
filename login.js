@@ -6,14 +6,18 @@ var Sequelize = require('sequelize');
 // var sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/auth-system', {
 //     logging: false
 // });
-var hs = 'postgres://zjczluqbvhxxsh:090ac543674f2e44c99c8835073d324b7f05586928317f336fbe630732bf09a6@ec2-107-22-238-186.compute-1.amazonaws.com:5432/d8lre5n7ki3ob1';
+var hs ='postgres://postgres:postgres@localhost:5432/auth-system';
 var sequelize = new Sequelize(process.env.DATABASE_URL || hs, {
-    logging: false,
-    dialect: 'postgres',
-    dialectOptions: {
-        ssl: true
-    }
+    logging: false
 });
+//var hs = 'postgres://zjczluqbvhxxsh:090ac543674f2e44c99c8835073d324b7f05586928317f336fbe630732bf09a6@ec2-107-22-238-186.compute-1.amazonaws.com:5432/d8lre5n7ki3ob1';
+// var sequelize = new Sequelize(process.env.DATABASE_URL || hs, {
+//     logging: false,
+//     dialect: 'postgres',
+//     dialectOptions: {
+//         ssl: true
+//     }
+// });
 var md5 = require('md5');
 
 var usr = sequelize.define('users', {
@@ -48,18 +52,23 @@ var usr = sequelize.define('users', {
 function checkNodeInUser(username) {
     var model = newUser(username);
     var buf = 0;
-    model.sync()
-        .then(() => {
-            model.findAll().then((user) => {
-                var a = user.length == undefined ? 0 : user.length;
-                console.log("Jumlah node terdaftar " + username + ": " + a);
-                buf = a;
+    try {
+        model.sync()
+            .then(() => {
+                model.findAll().then((user) => {
+                    var a = user.length == undefined ? 0 : user.length;
+                    console.log("Jumlah node terdaftar " + username + ": " + a);
+                    buf = a;
+                });
+            })
+            .catch((error) => {
+                console.log(username + " belum memiliki node: " + error);
+                buf = 0;
             });
-        })
-        .catch((error) => {
-            console.log(username + " belum memiliki node: " +error);
-            buf = 0;
-        });
+    } catch (e) {
+        console.log(e);
+    }
+
     return buf;
 }
 
@@ -99,6 +108,41 @@ function newUser(username) {
 module.exports = {
     modelUser: function () {
         return usr;
+    },
+    modelNode: function(nodeName){
+        var nondeModel = sequelize.define(nodeName, {
+            time: {
+                type: Sequelize.TEXT,
+                unique: false,
+                allowNull: false
+            },
+            tegangan: {
+                type: Sequelize.TEXT,
+                unique: false,
+                allowNull: false
+            },
+            arus: {
+                type: Sequelize.TEXT,
+                allowNull: false
+            },
+            suhuEnv: {
+                type: Sequelize.TEXT,
+                allowNull: false
+            },
+            suhuLine: {
+                type: Sequelize.TEXT,
+                allowNull: false
+            },
+            kondisi: {
+                type: Sequelize.TEXT,
+                allowNull: false
+            },
+            kondisiSSR: {
+                type: Sequelize.TEXT,
+                allowNull: false
+            }
+        });
+        return nondeModel;
     },
     init: function (app) {
         app.use(bodyParser.urlencoded({
@@ -203,10 +247,27 @@ module.exports = {
         //=================================== daftar node event ================================//
         app.route('/daftarnode').get((req, res) => {
             if (req.session.user && req.cookies.user_sid) {
-                var bCheck = checkNodeInUser(req.cookies.username)
-                console.log(bCheck);
-                res.sendFile(__dirname + '/webpage/daftarnode.html');  
-                res.cookie("node", bCheck);
+                var model = newUser(req.cookies.username);
+                try {
+                    model.sync()
+                        .then(() => {
+                            model.findAll().then((user) => {
+                                var a = user.length == undefined ? 0 : user.length;
+                                console.log("Jumlah node terdaftar " + req.cookies.username + ": " + a);
+
+                                res.sendFile(__dirname + '/webpage/daftarnode.html');
+                                res.cookie("node", a);
+                            });
+                        })
+                        .catch((error) => {
+                            console.log(req.cookies.username + " belum memiliki node: " + error);
+
+                            res.sendFile(__dirname + '/webpage/daftarnode.html');
+                            res.cookie("node", 0);
+                        });
+                } catch (e) {
+                    console.log(e);
+                }
             } else {
                 res.redirect('/login');
             }
@@ -216,6 +277,14 @@ module.exports = {
                 ket = req.body.keterangan;
             createNewNode(newUser(req.cookies.username), SID, namaNode, ket);
             res.redirect('/daftarnode');
+        });
+        //==================================== datalog event ====================================//
+        app.get('/data', (req, res) => {
+            if (req.session.user && req.cookies.user_sid) {
+                res.sendFile(__dirname + '/webpage/data.html');
+            } else {
+                res.redirect('/login');
+            }
         });
     },
     authdb: function () {

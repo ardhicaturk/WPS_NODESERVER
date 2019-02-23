@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <script src="js/jquery-3.1.1.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="js/socket.io.js"></script>
+  <script>
+    $.urlParam = function (name) {
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      return results[1] || 0;
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    var bC = false;
+    $(function () {
+      var socket = io();
+      var node = $.urlParam('node');
+      var page = $.urlParam('page');
+      var user = getCookie('username');
+      var offst = page * 60;
+      socket.emit('datalogRequest', node+','+page+','+user);
+      socket.on('datalogResponse', function (data) {
+        
+        $(".overlay").css("display", "block");
+        var bufTegangan = JSON.parse(data.tegangan);
+        var bufArus = JSON.parse(data.arus);
+        var bufSuhuLine = JSON.parse(data.suhuLine);
+        var bufSuhuEnv = JSON.parse(data.suhuEnv);
+        //var bufTime = JSON.parse(data.time);
+        var bufKondisi = JSON.parse(data.kondisi);
+        var bufKondisiSSR = JSON.parse(data.kondisiSSR);
+        var date = data.createdAt.split("T");
+        var tim = date[1].split('.');
+        var splitTim = tim[0].split(':');
+        var reStruct = function(detik){
+          return date[0] + ", " + splitTim[0] + ':' + splitTim[1] + ':' + (detik < 10 ? ("0"+detik) : detik)
+        };
+        for (var i = 0; i < bufTegangan[0].length; i++) {
+          var str = "<tr>\
+                    <td>" + (i + 1 + offst) + "</td>\
+                    <td>" + reStruct(i) +
+                    "</td>\
+                    <td>" + bufTegangan[0][i] + "</td>\
+                    <td>" + bufArus[0][i] +
+                    "</td>\
+                    <td>" + bufSuhuEnv[0][i] + "</td>\
+                    <td>" + bufSuhuLine[0][i] + "</td>\
+                    <td>" + bufKondisi[0][i] + "</td>\
+                    <td>" + bufKondisiSSR[0][i] + "</td>\
+                    </tr>";
+          $("#tabelisi").append(str);
+        }
+
+        $(".overlay").css("display", "none");
+      });
+    });
+  </script>
+  <style>
+    .container {
+      width: 100%;
+    }
+
+    .overlay {
+      display: block;
+      padding: 20px;
+      position: absolute;
+      width: 88vw;
+      height: 60vh;
+      opacity: 0.7;
+      background-color: white;
+    }
+
+    .loading {
+      position: relative;
+      top: calc(50% - 40px);
+      left: calc(50% - 40px);
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #3498db;
+      width: 80px;
+      height: 80px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body class="container" style="padding-top: 10px;">
+  <div class="overlay">
+    <div class="loading"></div>
+  </div>
+  <div id="tes"></div>
+  <table class="table table-hover" id="tabelisi" name="tabelisi">
+    <tr>
+      <th width=5%>#</th>
+      <th width=25%>Time</th>
+      <th width=10%>Tegangan</th>
+      <th width=10%>Arus</th>
+      <th width=10%>SuhuEnv</th>
+      <th width=10%>SuhuLine</th>
+      <th width=15%>Kondisi</th>
+      <th width=15%>KondisiSSR</th>
+    </tr>
+  </table>
+</body>
+
+</html>

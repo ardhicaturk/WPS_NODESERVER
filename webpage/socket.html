@@ -28,7 +28,13 @@
         socket.emit('webClient', username + "," + msg);
         socket.emit('getNode', username);
       });
-      
+      socket.on('LastData', function (data) {
+        $("#client" + data[0] + " #tegangan").html(data[1] + "V");
+        $("#client" + data[0] + " #arus").html(data[2] + "A");
+        $("#client" + data[0] + " #kondisi").html(data[5]);
+        $("#client" + data[0] + " #sakelar").html(data[6]);
+        $("#client" + data[0] + " #status").html(data[7] > -1 ? "Connect" : "Disconnect");
+      })
       socket.on('responseGetNode', function (data) {
         var num = data.length;
         if (lastNum < num) {
@@ -46,28 +52,35 @@
                         <p>RSSI:</p>\
                         <p>Tegangan:</p>\
                         <p>Arus:</p>\
-                        <p>Sakelar:</p>\
                         <p>Kondisi:</p>\
+                        <p>Sakelar:</p>\
                     </div>\
                     <div class="col-sm-8">\
-                        <p id="status"></p>\
-                        <p id="rssi"></p>\
-                        <p id="tegangan"></p>\
-                        <p id="arus"></p>\
-                        <p id="sakelar"></p>\
-                        <p id="kondisi"></p>\
+                        <p id="status">0</p>\
+                        <p id="rssi">0</p>\
+                        <p id="tegangan">0</p>\
+                        <p id="arus">0</p>\
+                        <p id="kondisi">0</p>\
+                        <p id="sakelar">0</p>\
                     </div>\
                 </div>\
             </div>'
-            )
+            );
+
+            socket.emit('readNodeLastData', username + "," + data[i].nameNode);
           }
           lastNum = num;
         }
         $(".overlay").css("display", "none");
+        // socket.emit('readNodeLastData', username);
       });
     });
   </script>
   <style>
+    body {
+      background: rgba(35, 165, 213, 0)
+    }
+
     .container {
       width: 90%;
     }
@@ -78,6 +91,7 @@
 
     .jumbotron {
       padding: 20px;
+      background: rgb(175, 241, 233);
       -webkit-box-shadow: -4px 7px 20px -1px rgba(0, 0, 0, 0.51);
       -moz-box-shadow: -4px 7px 20px -1px rgba(0, 0, 0, 0.51);
       box-shadow: -4px 7px 20px -1px rgba(0, 0, 0, 0.51);
@@ -91,43 +105,58 @@
       font-size: 12px;
       margin: 10px;
     }
-    .overlay{
-        display: block;
-        padding: 20px;
-        position: absolute;
-        width: 88vw;
-        height: 60vh;
-        opacity: 0.7;
-        background-color: white;
+
+    .overlay {
+      display: block;
+      padding: 20px;
+      position: absolute;
+      width: 88vw;
+      height: 60vh;
+      opacity: 0.7;
+      background-color: white;
     }
+
     .loading {
-        position: relative;
-        top: calc(50% - 40px);
-        left: calc(50% - 40px);
-        border: 16px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 16px solid #3498db;
-        width: 80px;
-        height: 80px;
-        -webkit-animation: spin 2s linear infinite; /* Safari */
-        animation: spin 2s linear infinite;
+      position: relative;
+      top: calc(50% - 40px);
+      left: calc(50% - 40px);
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #3498db;
+      width: 80px;
+      height: 80px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
     }
 
-/* Safari */
+    /* Safari */
     @-webkit-keyframes spin {
-        0% { -webkit-transform: rotate(0deg); }
-        100% { -webkit-transform: rotate(360deg); }
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
     }
 
-    @keyframes spin {  
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
 
 <body class="container" style="padding-top: 10px;">
-  <div class="overlay"><div class="loading"></div></div>
+  <div class="overlay">
+    <div class="loading"></div>
+  </div>
   <div class="row" id="clientList">
 
   </div>
