@@ -71,7 +71,7 @@
             display: none;
             padding: 20px;
             position: absolute;
-            width: 88vw;
+            width: 90vw;
             height: 60vh;
             opacity: 0.8;
             background-color: white;
@@ -220,16 +220,6 @@
         $('body').append('<iframe src="/datalog?node=' + nodeSelected + '&page=' + page +
             '" style="height:100%;width:100%;border:0;"></iframe>');
         $('#pageIndex').html("<h5>Hal: " + (page + 1) + "</h5>");
-        // if (page == 0) {
-        //     $("#prevPage").css("display", "none");
-        //     $("#nextPage").css("display", "block");
-        // } else if (page == maxPage) {
-        //     $("#prevPage").css("display", "block");
-        //     $("#nextPage").css("display", "none");
-        // } else {
-        //     $("#prevPage").css("display", "block");
-        //     $("#nextPage").css("display", "block");
-        // }
     });
     $('#prevPage').click(function () {
         page--;

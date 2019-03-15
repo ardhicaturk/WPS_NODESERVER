@@ -38,31 +38,18 @@
       socket.on('datalogResponse', function (data) {
         
         $(".overlay").css("display", "block");
-        var bufTegangan = JSON.parse(data.tegangan);
-        var bufArus = JSON.parse(data.arus);
-        var bufSuhuLine = JSON.parse(data.suhuLine);
-        var bufSuhuEnv = JSON.parse(data.suhuEnv);
-        //var bufTime = JSON.parse(data.time);
-        var bufKondisi = JSON.parse(data.kondisi);
-        var bufKondisiSSR = JSON.parse(data.kondisiSSR);
-        var date = data.createdAt.split("T");
-        var tim = date[1].split('.');
-        var splitTim = tim[0].split(':');
-        var reStruct = function(detik){
-          return date[0] + ", " + splitTim[0] + ':' + splitTim[1] + ':' + (detik < 10 ? ("0"+detik) : detik)
-        };
-        for (var i = 0; i < bufTegangan[0].length; i++) {
+        for (var i = 0; i < data.length; i++) {
           var str = "<tr>\
-                    <td>" + (i + 1 + offst) + "</td>\
-                    <td>" + reStruct(i) +
+                    <td>" + data[i].id + "</td>\
+                    <td>" + data[i].time +
                     "</td>\
-                    <td>" + bufTegangan[0][i] + "</td>\
-                    <td>" + bufArus[0][i] +
+                    <td>" + data[i].tegangan + "</td>\
+                    <td>" + data[i].arus +
                     "</td>\
-                    <td>" + bufSuhuEnv[0][i] + "</td>\
-                    <td>" + bufSuhuLine[0][i] + "</td>\
-                    <td>" + bufKondisi[0][i] + "</td>\
-                    <td>" + bufKondisiSSR[0][i] + "</td>\
+                    <td>" + data[i].suhuEnv + "</td>\
+                    <td>" + data[i].suhuLine + "</td>\
+                    <td>" + data[i].kondisi.toUpperCase() + "</td>\
+                    <td>" + (data[i].kondisiSSR == "0" ? "ON" : "OFF") + "</td>\
                     </tr>";
           $("#tabelisi").append(str);
         }
@@ -72,6 +59,11 @@
     });
   </script>
   <style>
+    body {
+      background: rgba(35, 165, 213, 0);
+      color: white;
+    }
+
     .container {
       width: 100%;
     }
@@ -120,6 +112,13 @@
         transform: rotate(360deg);
       }
     }
+    .table tr:hover {
+      background: #2b61f5;
+    }
+    .table th{
+      background: #e74ac0;
+      color: white;
+    }
   </style>
 </head>
 
@@ -128,7 +127,7 @@
     <div class="loading"></div>
   </div>
   <div id="tes"></div>
-  <table class="table table-hover" id="tabelisi" name="tabelisi">
+  <table class="table" id="tabelisi" name="tabelisi">
     <tr>
       <th width=5%>#</th>
       <th width=25%>Time</th>

@@ -109,6 +109,89 @@ module.exports = {
     modelUser: function () {
         return usr;
     },
+    Opt: function(){
+        return Sequelize.Op;
+    },
+    modelData2: function(nodeName){
+        var nondeModel = sequelize.define(nodeName, {
+            time: {
+                type: Sequelize.DATE,
+                unique: false,
+                allowNull: false
+            },
+            tegangan: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            arus: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            suhuEnv: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            suhuLine: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            kondisi: {
+                type: Sequelize.TEXT,
+                unique: false,
+                allowNull: false
+            },
+            kondisiSSR: {
+                type: Sequelize.INTEGER,
+                unique: false,
+                allowNull: false
+            }
+        });
+        return nondeModel;
+    },
+    modelData: function(nodeName){
+        var nondeModel = sequelize.define(nodeName, {
+            time: {
+                type: Sequelize.INTEGER,
+                unique: false,
+                allowNull: false
+            },
+            tegangan: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            arus: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            suhuEnv: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            suhuLine: {
+                type: Sequelize.FLOAT,
+                unique: false,
+                allowNull: false
+            },
+            kondisi: {
+                type: Sequelize.TEXT,
+                unique: false,
+                allowNull: false
+            },
+            kondisiSSR: {
+                type: Sequelize.INTEGER,
+                unique: false,
+                allowNull: false
+            }
+        });
+        return nondeModel;
+    },
     modelNode: function(nodeName){
         var nondeModel = sequelize.define(nodeName, {
             time: {

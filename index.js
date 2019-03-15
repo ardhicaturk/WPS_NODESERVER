@@ -3,6 +3,42 @@ var port = process.env.PORT || 8089;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 var sslRedirect = require('heroku-ssl-redirect');
+const tcp = require('net');
+const tcpHost = '127.0.0.1';
+const tcpPort = 7070;
+const tcpServer = tcp.createServer();
+tcpServer.listen(tcpPort, () => {
+    console.log("TCP Server on *:7070");
+});
+var nodeList = new Object();
+// nodeList.ID = new Array();
+// nodeList.name = new Array();
+// nodeList.RSSI = new Array();
+nodeList.HWID = new Array();
+nodeList.address = new Array();
+nodeList.isConnect = new Array();
+// nodeList.kondisiSSR = new Array();
+// nodeList.tegangan = new Array();
+// nodeList.arus = new Array();
+// nodeList.kondisi = new Array();
+// nodeList.sakelar = new Array();
+// nodeList.suhuEnv = new Array();
+// nodeList.suhuLine = new Array();
+// nodeList.time = new Array();
+
+/*
+Additional nodeList:
+-kondisiSSR
+-RSSI
+-Tegangan
+-Arus
+-Sakelar
+-Kondisi
+-suhuEnv
+-suhuLine
+-time
+*/
+
 //const redis = require('socket.io-redis');
 var loginPage = require('./login');
 var User = require('./login').modelUser();
@@ -37,33 +73,31 @@ app.get('/css/bootstrap.min.css', function (req, res, next) {
 app.get('/js/bootstrap.min.js', function (req, res, next) {
     res.status(200).sendFile(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.min.js');
 });
-//====================================== Socket IO Event Handler ====================================//
-var nodeList = new Object();
-nodeList.ID = new Array();
-nodeList.name = new Array();
-nodeList.RSSI = new Array();
-nodeList.SID = new Array();
-nodeList.kondisiSSR = new Array();
-nodeList.tegangan = new Array();
-nodeList.arus = new Array();
-nodeList.kondisi = new Array();
-nodeList.sakelar = new Array();
-nodeList.suhuEnv = new Array();
-nodeList.suhuLine = new Array();
-nodeList.time = new Array();
+app.get('/test', function (req, res, next) {
+    var model = loginPage.modelData2('A0004');
+    var buffer = new Array();
+    var buf = {
+        time: '2019-03-10 18:15:01.000+07',
+        tegangan: 222.2,
+        arus: '2.2',
+        suhuEnv: '22',
+        suhuLine: '23',
+        kondisi: 'aman',
+        kondisiSSR: '0'
+    };
+    buffer.push(buf);
+    buffer.push(buf);
+    model.sync().then(() => {
+        console.log('bulk sync!');
+        model.bulkCreate(buffer).then(data => {
+            console.log('bulk insert ok');
+        })
+    });
 
-/*
-Additional nodeList:
--kondisiSSR
--RSSI
--Tegangan
--Arus
--Sakelar
--Kondisi
--suhuEnv
--suhuLine
--time
-*/
+    res.status(200);
+});
+//====================================== Socket IO Event Handler ====================================//
+
 var clientList = new Object();
 clientList.user = new Array();
 clientList.ID = new Array();
@@ -110,197 +144,148 @@ function translateRSSI(num) {
     }
 }
 
-function saveInput(dataType, SID, dta) {
-    var buf = nodeList.name.indexOf(SID);
-    if (buf > -1) {
-        switch (dataType) {
-            case "RSSI":
-                nodeList.RSSI[buf] = dta;
-                //console.log("RSSI " + nodeList.name[buf] + ": " + translateRSSI(nodeList.RSSI[buf]));
-                break;
-            case "param1":
-                break;
-            default:
-                break;
+//========================================== NODE HANDLER ======================================//
+tcpServer.on('connection', function (sock) {
+    console.log('Connected: ' + sock.remoteAddress + ':' + sock.remotePort);
+    sock.on('data', function (data) {
+        if (data.indexOf('ping') > -1) {
+            // console.log(data);
+            var strData = data.toString();
+            var splt = strData.split(","); // 1: HWID
+            var index = nodeList.HWID.indexOf(splt[1]);
+            if (index > -1) {
+                nodeList.HWID[index] = splt[1];
+                nodeList.address[index] = sock.remoteAddress;
+                nodeList.isConnect[index] = 1;
+            } else {
+                nodeList.HWID.push(splt[1]);
+                nodeList.address.push(sock.remoteAddress);
+                nodeList.isConnect.push(1);
+            }
+        } else {
+            var a = JSON.parse(data);
+            console.log("DATA " + sock.remoteAddress + ", " + data.byteLength + ": " + a.sid);
+            // console.log(JSON.stringify(data));
+            var sidd = a.sid;
+            var model = loginPage.modelData2(sidd.toString());
+            var buffer = new Array();
+            console.log(a.times[0]);
+            for (var i = 0; i < a.tegangan.length; i++) {
+                var buf = {
+                    time: a.times[i],
+                    tegangan: a.tegangan[i],
+                    arus: a.arus[i],
+                    suhuEnv: a.suhuEnv[i],
+                    suhuLine: a.suhuLine[i],
+                    kondisi: a.kondisi[i],
+                    kondisiSSR: a.kondisiSSR[i]
+                };
+                buffer.push(buf);
+            }
+            model.sync().then(() => {
+                console.log('bulk sync!');
+                model.bulkCreate(buffer).then(data => {
+                    console.log('bulk insert ok');
+                })
+            });
         }
-    }
-
-}
+        sock.write("OKE");
+    });
+    sock.on('close', function (data) {
+        console.log("Disconnect " + sock.remoteAddress);
+        var index = nodeList.address.indexOf(sock.remoteAddress);
+        if (index > -1) {
+            nodeList.isConnect[index] = 0;
+        }
+    });
+    sock.on('error', function (data) {
+        console.error(data);
+    })
+});
 io.on('connection', function (socket) {
-    //console.log('a user connected: ' + socket.id);
+    console.log('a user connected: ' + socket.request.connection.remoteAddress);
     //socket.send("Your ID: " + socket.id);
     io.sockets.connected[socket.id].emit("ID", socket.id);
     socket.on('disconnect', function () {
-        var a = nodeList.ID.indexOf(socket.id);
-        if (a > -1) {
-            console.log(nodeList.name[a] + ' is disconnected');
-            nodeList.ID[a] = 0;
-        } else {
-            var b = clientList.ID.indexOf(socket.id);
-            console.log('web client: ' + clientList.user[b] + ' is disconnected');
-        }
-
-    });
-    socket.on('greeting', function (data) {
-        console.log(data);
-    });
-    //========================================== NODE HANDLER ======================================//
-    socket.on('nameNode', function (data) {
-        var a = data.split(","); // 0: name, 1: ID, 2: SID
-        var i = -1;
-        var z = -1;
-        for (var k = 0; k < clientList.node.length; k++) {
-            i = clientList.node[k].nameNode.indexOf(a[2]);
-            if (i > -1) {
-                z = k;
-            }
-        }
-        var name;
-        if (i > -1) {
-            name = clientList.node[z].nameNode[i];
-        } else {
-            name = a[0];
-        }
-        checkMember(a[1], a[2], name);
-    });
-    socket.on('RSSI', function (data) {
-        var a = data.split(","); // 0: SID, 1: RSSI
-        saveInput("RSSI", a[0], a[1]);
-        //console.log(data);
+        var b = clientList.ID.indexOf(socket.id);
+        console.log('web client: ' + clientList.user[b] + ' is disconnected');
     });
 
-    socket.on('nodeDataTegangan', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (tegangan): " + nodeList.SID[i]);
-        nodeList.tegangan[i] = new Array();
-        nodeList.tegangan[i].push(a);
-        //console.log(nodeList.tegangan[i]);
-    });
-    socket.on('nodeDataArus', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (Arus): " + nodeList.SID[i]);
-        nodeList.arus[i] = new Array();
-        nodeList.arus[i].push(a);
-        //console.log(nodeList.arus[i]);
-    });
-    socket.on('nodeDataSuhuEnv', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (suhuEnv): " + nodeList.SID[i]);
-        nodeList.suhuEnv[i] = new Array();
-        nodeList.suhuEnv[i].push(a);
-        //console.log(nodeList.suhuEnv[i]);
-    });
-    socket.on('nodeDataSuhuLine', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (suhuLine): " + nodeList.SID[i]);
-        nodeList.suhuLine[i] = new Array();
-        nodeList.suhuLine[i].push(a);
-        //console.log(nodeList.suhuLine[i]);
-    });
-    socket.on('nodeDataKondisi', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (kondisi): " + nodeList.SID[i]);
-        nodeList.kondisi[i] = new Array();
-        nodeList.kondisi[i].push(a);
-        //console.log(nodeList.suhuLine[i]);
-    });
-    socket.on('nodeDataKondisiSSR', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (kondisiSSR): " + nodeList.SID[i]);
-        nodeList.kondisiSSR[i] = new Array();
-        nodeList.kondisiSSR[i].push(a);
-        //console.log(nodeList.suhuLine[i]);
-    });
-    socket.on('nodeDataTime', function (data) {
-        var a = JSON.parse(data);
-        var i = nodeList.ID.indexOf(socket.id);
-        //console.log("data baru (Time): " + nodeList.SID[i]);
-        nodeList.time[i] = new Array();
-        nodeList.time[i].push(a);
-        //console.log(nodeList.suhuLine[i]);
-    });
-    socket.on("nodeData", function (data) {
-        if (data == 'end') {
-            var i = nodeList.ID.indexOf(socket.id);
-            console.log("Finish transaction: " + nodeList.SID[i]);
-            var model = loginPage.modelNode(nodeList.SID[i]);
-            model.sync()
-                .then(() => {
-                    console.log(nodeList.SID[i] + " Sync OK");
-                    model.create({
-                            time: JSON.stringify(nodeList.time[i]),
-                            tegangan: JSON.stringify(nodeList.tegangan[i]),
-                            arus: JSON.stringify(nodeList.arus[i]),
-                            suhuEnv: JSON.stringify(nodeList.suhuEnv[i]),
-                            suhuLine: JSON.stringify(nodeList.suhuLine[i]),
-                            kondisi: JSON.stringify(nodeList.kondisi[i]),
-                            kondisiSSR: JSON.stringify(nodeList.kondisiSSR[i])
-                        })
-                        .then(user => {
-                            console.log(nodeList.SID[i] + " INSERT OK");
-                        })
-                        .catch(error => {
-                            console.log(nodeList.SID[i] + " INSERT ERROR");
-                        });
-                })
-                .catch(error => console.log(nodeList.SID[i] + ' Sync ERROR', error));
-        }
-    });
     //=========================================== Webclient Handler =================================//
-   
+
     socket.on("readNodeLastData", function (data) {
         var spl = data.split(","); //0: username, 1: nodename
         var i = clientList.user.indexOf(spl[0]);
         var nn = clientList.node[i].nameNode.indexOf(spl[1]);
-        
-        console.log(clientList.node[i].SID[nn]);
-        var model = loginPage.modelNode(clientList.node[i].SID[nn]);
-        model.findAll({
-            limit: 1,
-            order: [
-                ['createdAt', 'DESC']
-            ]
-        }).then(function (d) {
-            var teg = JSON.parse(d[0].get('tegangan'));
-            var ars = JSON.parse(d[0].get('arus'));
-            var suhuEnv = JSON.parse(d[0].get('suhuEnv'));
-            var suhuLine = JSON.parse(d[0].get('suhuLine'));
-            var kondisi = JSON.parse(d[0].get('kondisi'));
-            var kondisiSSR = JSON.parse(d[0].get('kondisiSSR'));
-            var bconnect=nodeList.SID.indexOf(clientList.node[i].SID[nn]);
-            var z = [nn,teg[0][teg[0].length - 1], 
-            ars[0][ars[0].length - 1],
-            suhuEnv[0][suhuEnv[0].length - 1],
-            suhuLine[0][suhuLine[0].length - 1],
-            kondisi[0][kondisi[0].length - 1],
-            kondisiSSR[0][kondisiSSR[0].length - 1],
-            bconnect
-            ];
-            console.log(z);
-            io.sockets.connected[socket.id].emit("LastData", z);
-        }).catch(e => {
-            // console.log(e);
+        var model = loginPage.modelData2(clientList.node[i].SID[nn]);
+        var findIndex = nodeList.HWID.indexOf(clientList.node[i].SID[nn]);
+        var iscn = 0;
+        if (findIndex > -1) {
+            iscn = nodeList.isConnect[findIndex];
+        }
+        model.count().then(c => {
+            model.findById(c).then(d => {
+                // console.log(d);
+                var buf = {
+                    listnode: nn,
+                    tegangan: d.get('tegangan'),
+                    arus: d.get('arus'),
+                    kondisi: d.get('kondisi'),
+                    kondisiSSR: d.get('kondisiSSR'),
+                    isConnect: iscn
+                };
+                io.sockets.connected[socket.id].emit("LastData", buf);
+                // console.log(buf);
+            }).catch(e => {
+                console.log(e);
+            });
         });
+
 
     });
 
     socket.on('datalogRequest', function (data) {
         var split = data.split(','); //0: namenode , 1: page, 2: username
+        var page = split[1] * 60;
         var ip = clientList.user.indexOf(split[2]);
         var i = clientList.node[ip].nameNode.indexOf(split[0]);
-        console.log("Datalog reqeust: " + clientList.node[ip].SID[i]);
-        var model = loginPage.modelNode(clientList.node[ip].SID[i]);
-        model.findAll().then(datas => {
-            console.log("Datalog size: " + datas.length + " packet");
-            var check = JSON.stringify(datas[split[1]]);
-            var tes = JSON.parse(check);
-            io.sockets.connected[socket.id].emit("datalogResponse", tes);
+        var model = loginPage.modelData2(clientList.node[ip].SID[i]);
+        var Op = loginPage.Opt();
+        var buffer = new Array();
+        console.log("Datalog reqeust: " + clientList.node[ip].SID[i] + ", page: " + page);
+        model.count().then(c => {
+            console.log("TOTAL DATA: " + c);
+            var b = c - page;
+            var a = b - 60;
+            a = a > 0 ? a : 0;
+            model.findAll({
+                order: [
+                    ['id', 'DESC']
+                ],
+                where: {
+                    id: {
+                        [Op.between]: [a, b]
+                    }
+                }
+            }).then(datas => {
+                console.log("Datalog size: " + datas.length + " packet");
+                for (var k = 0; k < datas.length; k++) {
+                    var buf = {
+                        id: datas[k].get('id'),
+                        time: datas[k].get('time'),
+                        tegangan: datas[k].get('tegangan'),
+                        arus: datas[k].get('arus'),
+                        suhuEnv: datas[k].get('suhuEnv'),
+                        suhuLine: datas[k].get('suhuLine'),
+                        kondisi: datas[k].get('kondisi'),
+                        kondisiSSR: datas[k].get('kondisiSSR')
+                    };
+                    buffer.push(buf);
+                }
+                // console.log(buffer);
+                io.sockets.connected[socket.id].emit("datalogResponse", buffer);
+
+            });
         });
     });
     socket.on('maxPage', function (data) {
@@ -309,8 +294,9 @@ io.on('connection', function (socket) {
         var i = clientList.node[ip].nameNode.indexOf(a[1]);
         var model = loginPage.modelNode(clientList.node[ip].SID[i]);
         model.findAll().then(datas => {
-            console.log("max page: " + datas.length + " page");
-            io.sockets.connected[socket.id].emit("maxPageResponse", datas.length);
+            var asd = Math.round(datas.length / 60) + 1;
+            console.log("max page: " + asd + " page");
+            io.sockets.connected[socket.id].emit("maxPageResponse", asd);
         });
     });
     socket.on('webClient', function (data) {

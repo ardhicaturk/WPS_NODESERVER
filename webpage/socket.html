@@ -4,10 +4,78 @@
 <head>
 
   <link rel="stylesheet" href="/css/bootstrap.min.css">
+
   <script src="js/jquery-3.1.1.js"></script>
   <script src="/js/bootstrap.min.js"></script>
   <script src="js/socket.io.js"></script>
+
   <script>
+    function elementInsert(id, name){
+      var strBuf = '<div class="listnode panel panel-primary" id="client'+id+'" name="tes">\
+          <div class="panel-heading">\
+            <h3 class="panel-title" id="sttsCon" style="display: none;color:#97f8d8">Connect</h3>\
+            <h3 class="panel-title" id="sttsDiscon" style="display: inline;color:#fcb4b4">Disconnect</h3>\
+            <h3 class="panel-title" style="display: inline;"> | '+name+'</h3>\
+          </div>\
+          <div class="panel-body" style="color:black;">\
+            <div class="col-sm-3" style="text-align: center; border-right: grey 1px solid;">\
+              <div class="panel panel-info" id="teg" name="teg">\
+                <div class="panel-heading">\
+                  <h4>TEGANGAN</h4>\
+                </div>\
+              </div>\
+              <div class="panel-body">\
+                <h3 id="tegangan">0 V</h3>\
+              </div>\
+            </div>\
+            <div class="col-sm-3" style="text-align: center;border-right: grey 1px solid;">\
+              <div class="panel panel-info" id="teg" name="teg">\
+                <div class="panel-heading">\
+                  <h4>ARUS</h4>\
+                </div>\
+              </div>\
+              <div class="panel-body">\
+                <h3 id="arus">0 A</h3>\
+              </div>\
+            </div>\
+            <div class="col-sm-3" style="text-align: center;border-right: grey 1px solid;">\
+              <div class="panel panel-info" id="teg" name="teg">\
+                <div class="panel-heading">\
+                  <h4>KETERANGAN</h4>\
+                </div>\
+              </div>\
+              <div class="panel-body">\
+                <h3 id="kondisi">AMAN</h3>\
+              </div>\
+            </div>\
+            <div class="col-sm-3" style="text-align: center;">\
+              <div class="panel panel-info" id="teg" name="teg">\
+                <div class="panel-heading">\
+                  <h4>Sakelar</h4>\
+                </div>\
+              </div>\
+              <div class="panel-body" style="padding-top: 0px !important; ">\
+                <div class="status-power">\
+                  <div class="powercol1">\
+                    <label class="switch">\
+                      <input id="instatus" type="checkbox">\
+                      <span class="slider round">\
+                          <div style="display: inline; position: relative; top: 12px; left: -5px; color: white;">ON</div>\
+                          <div style="display: inline; position: relative; top: 12px; left: 6px; color: white;">OFF</div>\
+                      </span>\
+                    </label>\
+                  </div>\
+                </div>\
+              </div>\
+            </div>\
+          </div>\
+        </div>';
+        $("#clientList").append(strBuf);
+    }
+    function reqUpdate(sck, usr, name){
+      sck.emit('readNodeLastData', usr + "," + name);
+      setTimeout(reqUpdate, 10000, sck, usr, name);
+    }
     $.urlParam = function (name) {
       var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
       return results[1] || 0;
@@ -15,6 +83,7 @@
     var lastNum = 0;
     var bC = false;
     $(function () {
+      
       var socket = io();
       var username = $.urlParam('username');
 
@@ -29,45 +98,26 @@
         socket.emit('getNode', username);
       });
       socket.on('LastData', function (data) {
-        $("#client" + data[0] + " #tegangan").html(data[1] + "V");
-        $("#client" + data[0] + " #arus").html(data[2] + "A");
-        $("#client" + data[0] + " #kondisi").html(data[5]);
-        $("#client" + data[0] + " #sakelar").html(data[6]);
-        $("#client" + data[0] + " #status").html(data[7] > -1 ? "Connect" : "Disconnect");
+        $("#client" + data.listnode + " #tegangan").html(data.tegangan + " V");
+        $("#client" + data.listnode + " #arus").html(data.arus + " A");
+        $("#client" + data.listnode + " #kondisi").html(data.kondisi.toUpperCase());
+        $("#client" + data.listnode + " #instatus").prop('checked', data.kondisiSSR == "0" ? true : false);
+        // $("#client" + data.listnode + " #status").html(data.isConnect > 0 ? "Connect" : "Disconnect");
+        if(data.isConnect > 0){
+          $("#client" + data.listnode + " #sttsCon").css('display', 'inline');
+          $("#client" + data.listnode + " #sttsDiscon").css('display', 'none');
+        } else {
+          $("#client" + data.listnode + " #sttsDiscon").css('display', 'inline');
+          $("#client" + data.listnode + " #sttsCon").css('display', 'none');
+        }
       })
       socket.on('responseGetNode', function (data) {
         var num = data.length;
         if (lastNum < num) {
           for (var i = lastNum; i < num; i++) {
-            var odd = i % 2;
-            var add = odd == 0 ? "" : "col-sm-offset-2";
-            $("#clientList").append('<div id="client' + i +
-              '" class="jumbotron col-sm-5 ' + add +
-              '">\
-            <h3 class="text-center text-uppercase">' + data[i].nameNode +
-              '</h3>\
-            <div class="form-group keterangan">\
-                    <div class="col-sm-4">\
-                        <p>Status:</p>\
-                        <p>RSSI:</p>\
-                        <p>Tegangan:</p>\
-                        <p>Arus:</p>\
-                        <p>Kondisi:</p>\
-                        <p>Sakelar:</p>\
-                    </div>\
-                    <div class="col-sm-8">\
-                        <p id="status">0</p>\
-                        <p id="rssi">0</p>\
-                        <p id="tegangan">0</p>\
-                        <p id="arus">0</p>\
-                        <p id="kondisi">0</p>\
-                        <p id="sakelar">0</p>\
-                    </div>\
-                </div>\
-            </div>'
-            );
-
+            elementInsert(i, data[i].nameNode);
             socket.emit('readNodeLastData', username + "," + data[i].nameNode);
+            setTimeout(reqUpdate, 10000, socket, username, data[i].nameNode);
           }
           lastNum = num;
         }
@@ -149,6 +199,73 @@
       100% {
         transform: rotate(360deg);
       }
+    }
+    .switch {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 44px;
+    }
+    
+    .switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+    }
+    
+    .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(245, 125, 141);
+    box-shadow: 0 0 1px rgb(245, 125, 141);
+    -webkit-transition: .4s;
+    transition: .4s;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    text-decoration:none;
+    }
+    
+    .slider:before {
+    position: absolute;
+    content: "";
+    height: 36px;
+    width: 36px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    }
+    
+    input:checked + .slider {
+    background-color: #2196F3;
+    }
+    
+    input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+    }
+    
+    input:checked + .slider:before {
+    -webkit-transform: translateX(36px);
+    -ms-transform: translateX(36px);
+    transform: translateX(36px);
+    }
+    
+    /* Rounded sliders */
+    .slider.round {
+    border-radius: 44px;
+    }
+    
+    .slider.round:before {
+    border-radius: 50%;
     }
   </style>
 </head>

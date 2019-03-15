@@ -7,11 +7,70 @@
     <script src="js/jquery-3.1.1.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <style>
-        
+        body {
+            width: 100wh;
+            height: 90vh;
+            color: #fff;
+            background: linear-gradient(63deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+            background-size: 400% 400%;
+            -webkit-animation: Gradient 15s ease infinite;
+            -moz-animation: Gradient 15s ease infinite;
+            animation: Gradient 15s ease infinite;
+	        font-family: 'Open Sans';
+        }
+
+        @-webkit-keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        @-moz-keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        @keyframes Gradient {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
         .page-header{
             border-bottom: 1px solid #aaa;
         }
-        
+        .usr{
+            color:#23A6D5;
+            font-size: 1.2em;
+        }
+        .psw{
+            color:#23A6D5;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 
@@ -42,16 +101,16 @@
 
         </div>
         <div class="jumbotron col-sm-6">
-            <h2 class="text-center" style="margin-top: 0;">Login</h2>
+            <h2 class="text-center" style="margin-top: 0;color:#E73C7E;">Login</h2>
             <form class="form-horizontal" action="/login" method="post" style="border-top: #aaa 1px solid;padding-top: 15px;">
                 <div class="form-group">
-                    <label for="inputUsername" class="col-sm-3 control-label">Username</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control" id="inputUsername" placeholder="Username" name="username" autocomplete="off">
+                    <label for="inputUsername" class="col-sm-3 control-label usr">Username</label>
+                    <div class="col-sm-9 inusrpr">
+                        <input type="text" class="form-control inusr" id="inputUsername" placeholder="Username" name="username" autocomplete="off">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="inputPassword3" class="col-sm-3 control-label">Password</label>
+                    <label for="inputPassword3" class="col-sm-3 control-label psw">Password</label>
                     <div class="col-sm-9">
                         <input type="password" class="form-control" id="inputPassword3" placeholder="Password" name="password">
                     </div>
