@@ -6,18 +6,18 @@ var Sequelize = require('sequelize');
 // var sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/auth-system', {
 //     logging: false
 // });
-// var hs ='postgres://postgres:postgres@localhost:5432/auth-system';
-// var sequelize = new Sequelize(process.env.DATABASE_URL || hs, {
-//     logging: false
-// });
-var hs = 'postgres://zjczluqbvhxxsh:090ac543674f2e44c99c8835073d324b7f05586928317f336fbe630732bf09a6@ec2-107-22-238-186.compute-1.amazonaws.com:5432/d8lre5n7ki3ob1';
+var hs ='mysql://wpsserver:wpsserver123@te-ja.id:3306/wpsserver';
 var sequelize = new Sequelize(process.env.DATABASE_URL || hs, {
-    logging: false,
-    dialect: 'postgres',
-    dialectOptions: {
-        ssl: true
-    }
+    logging: false
 });
+// var hs = 'postgres://zjczluqbvhxxsh:090ac543674f2e44c99c8835073d324b7f05586928317f336fbe630732bf09a6@ec2-107-22-238-186.compute-1.amazonaws.com:5432/d8lre5n7ki3ob1';
+// var sequelize = new Sequelize(process.env.DATABASE_URL || hs, {
+//     logging: false,
+//     dialect: 'postgres',
+//     dialectOptions: {
+//         ssl: true
+//     }
+// });
 var md5 = require('md5');
 
 var usr = sequelize.define('users', {

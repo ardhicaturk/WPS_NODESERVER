@@ -1,5 +1,5 @@
 const app = require('express')();
-var port = process.env.PORT || 8089;
+var port = process.env.PORT || 3000;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 var sslRedirect = require('heroku-ssl-redirect');
@@ -11,20 +11,10 @@ tcpServer.listen(tcpPort, () => {
     console.log("TCP Server on *:7070");
 });
 var nodeList = new Object();
-// nodeList.ID = new Array();
-// nodeList.name = new Array();
-// nodeList.RSSI = new Array();
+
 nodeList.HWID = new Array();
 nodeList.address = new Array();
 nodeList.isConnect = new Array();
-// nodeList.kondisiSSR = new Array();
-// nodeList.tegangan = new Array();
-// nodeList.arus = new Array();
-// nodeList.kondisi = new Array();
-// nodeList.sakelar = new Array();
-// nodeList.suhuEnv = new Array();
-// nodeList.suhuLine = new Array();
-// nodeList.time = new Array();
 
 /*
 Additional nodeList:
