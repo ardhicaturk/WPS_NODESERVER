@@ -4,7 +4,6 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 var sslRedirect = require('heroku-ssl-redirect');
 const tcp = require('net');
-const tcpHost = '127.0.0.1';
 const tcpPort = 7070;
 const tcpServer = tcp.createServer();
 tcpServer.listen(tcpPort, () => {
@@ -30,8 +29,9 @@ Additional nodeList:
 */
 
 //const redis = require('socket.io-redis');
-var loginPage = require('./login');
-var User = require('./login').modelUser();
+var utils = require('./api/utils');
+var User = require('./api/db/table').userModel();
+var Node = require('./api/db/table');
 //===================================== HTTP Event Handler ========================================//
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -44,7 +44,8 @@ app.get('/', function (req, res, next) {
     res.status(200).sendFile(__dirname + '/webpage/index.html');;
 });
 */
-loginPage.init(app);
+const init = require('./route')(app);
+
 app.get('/socket', function (req, res, next) {
     res.status(200).sendFile(__dirname + '/webpage/socket.html');
 });
@@ -64,7 +65,7 @@ app.get('/js/bootstrap.min.js', function (req, res, next) {
     res.status(200).sendFile(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.min.js');
 });
 app.get('/test', function (req, res, next) {
-    var model = loginPage.modelData2('A0004');
+    var model = Node.nodeModel('A0004');
     var buffer = new Array();
     var buf = {
         time: '2019-03-10 18:15:01.000+07',
@@ -122,18 +123,6 @@ async function checkMember(ids, SID, names) {
     }
 }
 
-function translateRSSI(num) {
-    if (num >= -30) {
-        return "Amazing";
-    } else if (num >= -70) {
-        return "Good";
-    } else if (num >= -90) {
-        return "Bad";
-    } else {
-        return "Poor";
-    }
-}
-
 //========================================== NODE HANDLER ======================================//
 tcpServer.on('connection', function (sock) {
     console.log('Connected: ' + sock.remoteAddress + ':' + sock.remotePort);
@@ -157,7 +146,7 @@ tcpServer.on('connection', function (sock) {
             console.log("DATA " + sock.remoteAddress + ", " + data.byteLength + ": " + a.sid);
             // console.log(JSON.stringify(data));
             var sidd = a.sid;
-            var model = loginPage.modelData2(sidd.toString());
+            var model = Node.nodeModel(sidd.toString());
             var buffer = new Array();
             console.log(a.times[0]);
             for (var i = 0; i < a.tegangan.length; i++) {
@@ -207,7 +196,7 @@ io.on('connection', function (socket) {
         var spl = data.split(","); //0: username, 1: nodename
         var i = clientList.user.indexOf(spl[0]);
         var nn = clientList.node[i].nameNode.indexOf(spl[1]);
-        var model = loginPage.modelData2(clientList.node[i].SID[nn]);
+        var model = Node.nodeModel(clientList.node[i].SID[nn]);
         var findIndex = nodeList.HWID.indexOf(clientList.node[i].SID[nn]);
         var iscn = 0;
         if (findIndex > -1) {
@@ -238,10 +227,12 @@ io.on('connection', function (socket) {
         var split = data.split(','); //0: namenode , 1: page, 2: username
         var page = split[1] * 60;
         var ip = clientList.user.indexOf(split[2]);
+        split[0] = decodeURI(split[0]);
         var i = clientList.node[ip].nameNode.indexOf(split[0]);
-        var model = loginPage.modelData2(clientList.node[ip].SID[i]);
-        var Op = loginPage.Opt();
+        var model = Node.nodeModel(clientList.node[ip].SID[i]);
+        var Op = utils.Opt();
         var buffer = new Array();
+        console.log(split[0]);
         console.log("Datalog reqeust: " + clientList.node[ip].SID[i] + ", page: " + page);
         model.count().then(c => {
             console.log("TOTAL DATA: " + c);
@@ -282,7 +273,7 @@ io.on('connection', function (socket) {
         var a = data.split(','); //0: username, 1: namenode
         var ip = clientList.user.indexOf(a[0]);
         var i = clientList.node[ip].nameNode.indexOf(a[1]);
-        var model = loginPage.modelNode(clientList.node[ip].SID[i]);
+        var model = Node.nodeModel(clientList.node[ip].SID[i]);
         model.findAll().then(datas => {
             var asd = Math.round(datas.length / 60) + 1;
             console.log("max page: " + asd + " page");
@@ -303,7 +294,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on("getNode", function (data) {
-        var modul = loginPage.getNode(data);
+        var modul = utils.getNode(data);
         modul.sync()
             .then(() => {
                 //console.log('sync ok');
