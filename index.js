@@ -9,6 +9,9 @@ const tcpServer = tcp.createServer();
 tcpServer.listen(tcpPort, () => {
     console.log("TCP Server on *:7070");
 });
+var queReqChangeLogic = new Object();
+queReqChangeLogic.id = new Array();
+queReqChangeLogic.logic = new Array();
 var nodeList = new Object();
 
 nodeList.HWID = new Array();
@@ -141,6 +144,8 @@ tcpServer.on('connection', function (sock) {
                 nodeList.address.push(sock.remoteAddress);
                 nodeList.isConnect.push(1);
             }
+            
+            sock.write("OKE@");
         } else {
             var a = JSON.parse(data);
             console.log("DATA " + sock.remoteAddress + ", " + data.byteLength + ": " + a.sid);
@@ -167,8 +172,19 @@ tcpServer.on('connection', function (sock) {
                     console.log('bulk insert ok');
                 })
             });
+            
+            var check = queReqChangeLogic.id.indexOf(sidd.toString());
+            console.log(sidd + ','+ check);
+            if(check > -1){
+                console.log("gnti SSR");
+                sock.write("?"+queReqChangeLogic.logic[check]+'@');
+                queReqChangeLogic.logic.splice(check);
+                queReqChangeLogic.id.splice(check);
+                
+            } else {
+                sock.write("OK");
+            }
         }
-        sock.write("OKE");
     });
     sock.on('close', function (data) {
         console.log("Disconnect " + sock.remoteAddress);
@@ -206,7 +222,7 @@ io.on('connection', function (socket) {
             model.findById(c).then(d => {
                 // console.log(d);
                 var buf = {
-                    listnode: nn,
+                    listnode: clientList.node[i].SID[nn],
                     tegangan: d.get('tegangan'),
                     arus: d.get('arus'),
                     kondisi: d.get('kondisi'),
@@ -293,6 +309,19 @@ io.on('connection', function (socket) {
         }
     });
 
+    socket.on('reqSSRChangeLogic', function(data){
+        var a = data.split(",") // 0: Node ID, 1 = Logic
+        console.log("CONTROL SSR: " + data);
+        var check = queReqChangeLogic.id.indexOf(a[0]);
+        if(check > -1){
+            queReqChangeLogic.logic[check] = a[1];
+        } else {
+            queReqChangeLogic.id.push(a[0]);
+            queReqChangeLogic.logic.push(a[1]);
+        }
+        console.log(queReqChangeLogic);
+    });
+
     socket.on("getNode", function (data) {
         var modul = utils.getNode(data);
         modul.sync()
@@ -303,6 +332,7 @@ io.on('connection', function (socket) {
                     var index = clientList.user.indexOf(data);
                     //console.log("ID CLIENT: " + clientList.user[index]);
                     if (index > -1) {
+                        // console.log(users);
                         io.sockets.connected[clientList.ID[index]].emit("responseGetNode", users);
                     }
                     for (var i = 0; i < users.length; i++) {

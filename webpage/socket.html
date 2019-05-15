@@ -10,7 +10,7 @@
   <script src="js/socket.io.js"></script>
 
   <script>
-    function elementInsert(id, name){
+    function elementInsert(sc, id, name){
       var strBuf = '<div class="listnode panel panel-primary" id="client'+id+'" name="tes">\
           <div class="panel-heading">\
             <h3 class="panel-title" id="sttsCon" style="display: none;color:#97f8d8">Connect</h3>\
@@ -71,6 +71,11 @@
           </div>\
         </div>';
         $("#clientList").append(strBuf);
+        $('#client'+id+' #instatus').click(function(){
+          var tes = $('#client'+id+' #instatus').prop('checked');
+          // alert(tes + " : " + id);
+          sc.emit('reqSSRChangeLogic', id + ',' + Number(tes));
+        });
     }
     function reqUpdate(sck, usr, name){
       sck.emit('readNodeLastData', usr + "," + name);
@@ -115,7 +120,7 @@
         var num = data.length;
         if (lastNum < num) {
           for (var i = lastNum; i < num; i++) {
-            elementInsert(i, data[i].nameNode);
+            elementInsert(socket, data[i].SID, data[i].nameNode);
             socket.emit('readNodeLastData', username + "," + data[i].nameNode);
             setTimeout(reqUpdate, 10000, socket, username, data[i].nameNode);
           }

@@ -152,7 +152,7 @@ module.exports = (app) => {
         var SID = req.body.sid,
             namaNode = req.body.namanode,
             ket = req.body.keterangan;
-        createNewNode(newUser(req.cookies.username), SID, namaNode, ket);
+        createNewNode(utils.getNode(req.cookies.username), SID, namaNode, ket);
         res.redirect('/daftarnode');
     });
     //==================================== datalog event ====================================//
