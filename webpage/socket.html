@@ -111,7 +111,6 @@
         $("#client" + data.listnode + " #arus").html(data.arus + " A");
         $("#client" + data.listnode + " #kondisi").html(data.kondisi.toUpperCase());
         if(onChangeSSR){
-          onChangeSSR = false;
           $("#client" + data.listnode + " #instatus").prop('checked', ssr ? true : false);
         } else {
           $("#client" + data.listnode + " #instatus").prop('checked', data.kondisiSSR == "0" ? true : false);
