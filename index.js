@@ -127,6 +127,21 @@ async function checkMember(ids, SID, names) {
 }
 
 //========================================== NODE HANDLER ======================================//
+function translateKondisi(kon){
+    switch (kon){
+        case 2:
+            return "bahaya";
+            break;
+        case 1:
+            return "waspada";
+            break;
+        case 0:
+            return "aman";
+            break;
+        default:
+            break;
+    }
+}
 tcpServer.on('connection', function (sock) {
     console.log('Connected: ' + sock.remoteAddress + ':' + sock.remotePort);
     sock.on('data', function (data) {
@@ -161,7 +176,7 @@ tcpServer.on('connection', function (sock) {
                     arus: a.arus[i],
                     suhuEnv: a.suhuEnv[i],
                     suhuLine: a.suhuLine[i],
-                    kondisi: a.kondisi[i],
+                    kondisi: translateKondisi(a.kondisi[i]),
                     kondisiSSR: a.kondisiSSR[i]
                 };
                 buffer.push(buf);
