@@ -10,6 +10,8 @@
   <script src="js/socket.io.js"></script>
 
   <script>
+    var onChangeSSR = false;
+    var ssr;
     function elementInsert(sc, id, name){
       var strBuf = '<div class="listnode panel panel-primary" id="client'+id+'" name="tes">\
           <div class="panel-heading">\
@@ -74,7 +76,9 @@
         $('#client'+id+' #instatus').click(function(){
           var tes = $('#client'+id+' #instatus').prop('checked');
           // alert(tes + " : " + id);
+          ssr = tes;
           sc.emit('reqSSRChangeLogic', id + ',' + Number(tes));
+          onChangeSSR = true;
         });
     }
     function reqUpdate(sck, usr, name){
@@ -106,7 +110,12 @@
         $("#client" + data.listnode + " #tegangan").html(data.tegangan + " V");
         $("#client" + data.listnode + " #arus").html(data.arus + " A");
         $("#client" + data.listnode + " #kondisi").html(data.kondisi.toUpperCase());
-        $("#client" + data.listnode + " #instatus").prop('checked', data.kondisiSSR == "0" ? true : false);
+        if(onChangeSSR){
+          onChangeSSR = false;
+          $("#client" + data.listnode + " #instatus").prop('checked', ssr ? true : false);
+        } else {
+          $("#client" + data.listnode + " #instatus").prop('checked', data.kondisiSSR == "0" ? true : false);
+        }
         // $("#client" + data.listnode + " #status").html(data.isConnect > 0 ? "Connect" : "Disconnect");
         if(data.isConnect > 0){
           $("#client" + data.listnode + " #sttsCon").css('display', 'inline');
