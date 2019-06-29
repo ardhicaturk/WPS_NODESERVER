@@ -129,6 +129,9 @@ async function checkMember(ids, SID, names) {
 //========================================== NODE HANDLER ======================================//
 function translateKondisi(kon){
     switch (kon){
+        case 3:
+            return "off";
+            break;
         case 2:
             return "bahaya";
             break;
