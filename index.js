@@ -175,8 +175,8 @@ tcpServer.on('connection', function (sock) {
             for (var i = 0; i < a.tegangan.length; i++) {
                 var buf = {
                     time: a.times[i],
-                    tegangan: a.tegangan[i],
-                    arus: a.arus[i],
+                    tegangan: a.kondisi[i] == 3 ? 0 : a.tegangan[i],
+                    arus: a.kondisi[i] == 3 ? 0 : a.arus[i],
                     suhuEnv: a.suhuEnv[i],
                     suhuLine: a.suhuLine[i],
                     kondisi: translateKondisi(a.kondisi[i]),
