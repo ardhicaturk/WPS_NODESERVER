@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var usr = require('./api/db/table').userModel();
 var md5 = require('md5');
 var utils = require('./api/utils');
+//adsadasd
 function createNewNode(model, SID, nameNode, keterangan) {
     model.create({
             SID: SID,
