@@ -36,7 +36,7 @@
     "net": "^1.0.2",
     "pg": "^7.8.0",
     "pg-hstore": "^2.3.2",
-    "sequelize": "^4.42.0",
+    "sequelize": "^5.15.1",
     "socket.io": "^2.2.0",
     "socket.io-redis": "^5.2.0",
     "synchronized-promise": "0.0.4",
